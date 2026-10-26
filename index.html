@@ -722,7 +722,16 @@ a{color:var(--ice)}
   var demo = document.getElementById('demo'), cap = document.getElementById('demoCap'), stepEls = document.querySelectorAll('#steps li');
   var phases = [[0,3,'Stap 1 · Contact'],[3,6,'Stap 2 · Kennismaking & advies'],[6,11,'Stap 3 · Behandeling: bitje op maat, gel en blauw licht'],[11,14,'Stap 4 · Nazorg: een frissere glimlach']];
   var dStart = performance.now(); demo.classList.add('run'); var lastP = -1;
+  /* the loop waits at step 1 until the section is really on screen, and starts over each time you scroll back to it */
+  var demoOn = false;
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ es.forEach(function(e){
+      if(e.intersectionRatio >= .55 && !demoOn){ demoOn = true; dStart = performance.now(); }
+      else if(!e.isIntersecting){ demoOn = false; }
+    }); }, { threshold:[0, .55] }).observe(demo);
+  } else { demoOn = true; }
   setInterval(function(){
+    if(!demoOn) dStart = performance.now();
     var t = ((performance.now()-dStart)/1000) % 14, idx = 0;
     phases.forEach(function(ph,i){ if(t>=ph[0] && t<ph[1]) idx=i; });
     if(idx!==lastP){ lastP = idx; cap.textContent = phases[idx][2]; stepEls.forEach(function(li,i){ li.classList.toggle('active', i===idx); }); }
@@ -1171,7 +1180,7 @@ a{color:var(--ice)}
     var visible = true;
     if('IntersectionObserver' in window) new IntersectionObserver(function(es){ visible = es[0].isIntersecting; }).observe(host);
     function frame(now){
-      var t = rmD ? 12 : ((now - dStart)/1000) % 14;
+      var t = rmD ? 12 : (demoOn ? ((now - dStart)/1000) % 14 : 0);
       spin.rotation.y = rmD ? 0 : Math.sin(now/1000*.3)*.16; spin.rotation.x = .06;
       /* step 2: scan along every tooth */
       var scanOn = t >= 3 && t < 6; wires.forEach(function(w){ w.visible = scanOn; }); sheet.visible = scanOn;
