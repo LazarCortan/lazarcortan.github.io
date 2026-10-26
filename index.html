@@ -651,8 +651,7 @@ a{color:var(--ice)}
           <div class="channel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg><div><small>Locatie</small><span>Den Bosch</span></div></div>
           <div class="channel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r=".8"></circle></svg><div><small>Instagram</small><span><a href="https://www.instagram.com/lazo0733/">@lazo0733</a></span></div></div>
         </div>
-        <form id="form" class="reveal" name="aanvraag" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
-          <input type="hidden" name="form-name" value="aanvraag">
+        <form id="form" class="reveal" name="aanvraag" method="POST" novalidate>
           <p hidden><label>Niet invullen<input name="bot-field"></label></p>
           <div class="row">
             <label for="f-name">Naam<input id="f-name" name="name" autocomplete="name" required></label>
@@ -1267,8 +1266,11 @@ a{color:var(--ice)}
     if(!n.value.trim() || !m.value.trim() || !m.checkValidity()){ s.textContent = 'Vul je naam en een geldig e-mailadres in.'; return; }
     var form = e.target, btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; s.textContent = 'Bezig met versturen...';
-    fetch('/', { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body:new URLSearchParams(new FormData(form)).toString() })
-      .then(function(r){ if(!r.ok) throw new Error(r.status); form.reset(); s.textContent = 'Bedankt! Je aanvraag is verstuurd. Lazar neemt zo snel mogelijk contact met je op.'; })
+    var fd = new FormData(form), data = { _subject:'Nieuwe aanvraag via de website LC Laugh Cold', _template:'table', _captcha:'false', _honey:fd.get('bot-field')||'',
+      Naam:fd.get('name'), Telefoon:fd.get('phone'), _replyto:fd.get('email'), 'E-mail':fd.get('email'), Onderwerp:fd.get('topic'), Bericht:fd.get('message') };
+    fetch('https://formsubmit.co/ajax/lazarcortan@gmail.com', { method:'POST', headers:{ 'Content-Type':'application/json', 'Accept':'application/json' }, body:JSON.stringify(data) })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(j){ if(j && (j.success === false || j.success === 'false')) throw new Error('fail'); form.reset(); s.textContent = 'Bedankt! Je aanvraag is verstuurd. Lazar neemt zo snel mogelijk contact met je op.'; })
       .catch(function(){ s.textContent = 'Versturen lukte niet. Bel of WhatsApp naar +31 6 29 98 70 70, of mail naar lazarcortan@gmail.com.'; })
       .then(function(){ btn.disabled = false; });
   });
